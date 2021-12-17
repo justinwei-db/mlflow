@@ -260,6 +260,12 @@ def with_managed_run(autologging_integration, patch_function, tags=None):
                     mlflow.end_run(RunStatus.to_string(RunStatus.FAILED))
                 raise
             else:
+                active_run = mlflow.active_run()
+                if active_run is None:
+                    print("Avesh: active_run is None")
+                artifact_uri = active_run.info.artifact_uri
+                print(f"Avesh: artifact_uri = {artifact_uri}")
+
                 if managed_run:
                     mlflow.end_run(RunStatus.to_string(RunStatus.FINISHED))
                 return result
@@ -550,12 +556,6 @@ def safe_patch(
 
 
                     session.state = "succeeded"
-
-                    active_run = mlflow.active_run()
-                    if active_run is None:
-                        print("Avesh: active_run is None")
-                    artifact_uri = active_run.info.artifact_uri
-                    print(f"Avesh: artifact_uri = {artifact_uri}")
 
                     try_log_autologging_event(
                         AutologgingEventLogger.get_logger().log_patch_function_success,
