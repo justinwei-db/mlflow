@@ -532,6 +532,7 @@ def safe_patch(
                     # This is important because several autologging patch implementations inspect
                     # the signature of the `original` argument during execution
                     call_original = update_wrapper_extended(call_original, original)
+                    #import pdb; pdb.set_trace()
 
                     try_log_autologging_event(
                         AutologgingEventLogger.get_logger().log_patch_function_start,
@@ -547,7 +548,14 @@ def safe_patch(
                     else:
                         patch_function(call_original, *args, **kwargs)
 
+
                     session.state = "succeeded"
+
+                    active_run = mlflow.active_run()
+                    if active_run is None:
+                        print("Avesh: active_run is None")
+                    artifact_uri = active_run.info.artifact_uri
+                    print(f"Avesh: artifact_uri = {artifact_uri}")
 
                     try_log_autologging_event(
                         AutologgingEventLogger.get_logger().log_patch_function_success,
