@@ -277,6 +277,8 @@ def with_managed_run(autologging_integration, patch_function, tags=None):
                     print("c")
                     input_cols = tuple(m.signature.inputs.input_names())
                     print("d")
+                    print(input_cols)
+                    print(autologging_utils.fs_training_sets)
                     training_set = autologging_utils.fs_training_sets[input_cols]
                     print("e")
                     fs = FeatureStoreClient()
