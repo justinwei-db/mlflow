@@ -283,6 +283,7 @@ def with_managed_run(autologging_integration, patch_function, tags=None):
                     training_set = autologging_utils.fs_training_sets[input_cols]
                     print("e")
                     fs = FeatureStoreClient()
+                    print("model??:")
                     print(result)
                     fs.log_model(
                         result,
