@@ -22,6 +22,7 @@ from mlflow.utils.mlflow_tags import MLFLOW_AUTOLOGGING
 from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
 from mlflow.utils.file_utils import TempDir
 from mlflow.models import Model
+from mlflow.utils import autologging_utils
 
 _AUTOLOGGING_TEST_MODE_ENV_VAR = "MLFLOW_AUTOLOGGING_TESTING"
 
