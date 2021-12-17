@@ -23,6 +23,7 @@ from mlflow.store.artifact.artifact_repository_registry import get_artifact_repo
 from mlflow.utils.file_utils import TempDir
 from mlflow.models import Model
 from mlflow.utils import autologging_utils
+import importlib
 
 _AUTOLOGGING_TEST_MODE_ENV_VAR = "MLFLOW_AUTOLOGGING_TESTING"
 
@@ -287,10 +288,13 @@ def with_managed_run(autologging_integration, patch_function, tags=None):
                     fs = FeatureStoreClient()
                     print("model??:")
                     print(result)
+                    flavor_name = [x for x in m.flavors.keys() if x != 'python_function'][0]
+                    print(f"flavor_name = {flavor_name}")
+                    mlflow_flavor_module = importlib.import_module(f"mlflow.{flavor_name}")
                     fs.log_model(
                         result,
                         "feature_store_packaged_model",
-                        flavor=mlflow.sklearn,
+                        flavor=mlflow_flavor_module,
                         training_set=training_set
                     )
 
