@@ -60,6 +60,9 @@ from mlflow.utils.autologging_utils import (
     update_wrapper_extended,
 )
 from mlflow.tracking._model_registry import DEFAULT_AWAIT_MAX_SLEEP_SECONDS
+from mlflow.utils import autologging_utils
+import json
+from databricks.feature_store import FeatureStoreClient
 
 FLAVOR_NAME = "sklearn"
 
@@ -1368,6 +1371,18 @@ def _autolog(
                 artifact_path="model",
                 signature=signature,
                 input_example=input_example,
+            )
+
+            input_cols_json = signature.to_dict()["inputs"]
+            obj = json.loads(input_cols_json)
+            input_cols = tuple([x['name'] for x in obj])
+            training_set = autologging_utils.fs_training_sets[input_cols]
+            fs = FeatureStoreClient()
+            fs.log_model(
+                estimator,
+                "feature_store_packaged_model",
+                flavor=mlflow.sklearn,
+                training_set=training_set
             )
 
         if _is_parameter_search_estimator(estimator):
