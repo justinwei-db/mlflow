@@ -283,8 +283,9 @@ def with_managed_run(autologging_integration, patch_function, tags=None):
                     training_set = autologging_utils.fs_training_sets[input_cols]
                     print("e")
                     fs = FeatureStoreClient()
+                    print(result)
                     fs.log_model(
-                        estimator,
+                        result,
                         "feature_store_packaged_model",
                         flavor=mlflow.sklearn,
                         training_set=training_set
