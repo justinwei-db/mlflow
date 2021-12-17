@@ -1373,17 +1373,17 @@ def _autolog(
                 input_example=input_example,
             )
 
-            input_cols_json = signature.to_dict()["inputs"]
-            obj = json.loads(input_cols_json)
-            input_cols = tuple([x['name'] for x in obj])
-            training_set = autologging_utils.fs_training_sets[input_cols]
-            fs = FeatureStoreClient()
-            fs.log_model(
-                estimator,
-                "feature_store_packaged_model",
-                flavor=mlflow.sklearn,
-                training_set=training_set
-            )
+            # input_cols_json = signature.to_dict()["inputs"]
+            # obj = json.loads(input_cols_json)
+            # input_cols = tuple([x['name'] for x in obj])
+            # training_set = autologging_utils.fs_training_sets[input_cols]
+            # fs = FeatureStoreClient()
+            # fs.log_model(
+            #     estimator,
+            #     "feature_store_packaged_model",
+            #     flavor=mlflow.sklearn,
+            #     training_set=training_set
+            # )
 
         if _is_parameter_search_estimator(estimator):
             if hasattr(estimator, "best_estimator_") and log_models:

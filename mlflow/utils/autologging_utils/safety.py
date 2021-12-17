@@ -19,6 +19,9 @@ from mlflow.utils.autologging_utils.logging_and_warnings import (
     set_non_mlflow_warnings_behavior_for_current_thread,
 )
 from mlflow.utils.mlflow_tags import MLFLOW_AUTOLOGGING
+from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from mlflow.utils.file_utils import TempDir
+from mlflow.models import Model
 
 _AUTOLOGGING_TEST_MODE_ENV_VAR = "MLFLOW_AUTOLOGGING_TESTING"
 
@@ -265,6 +268,19 @@ def with_managed_run(autologging_integration, patch_function, tags=None):
                     print("Avesh: active_run is None")
                 artifact_uri = active_run.info.artifact_uri
                 print(f"Avesh: artifact_uri = {artifact_uri}")
+                repo = get_artifact_repository(artifact_uri)
+                with TempDir() as tmp:
+                    repo.download_artifacts("model", tmp.path())
+                    m = Model.load(os.path.join(tmp.path(), "model/MLmodel"))
+                    input_cols = tuple(m.signature.inputs.input_names())
+                    training_set = autologging_utils.fs_training_sets[input_cols]
+                    fs = FeatureStoreClient()
+                    fs.log_model(
+                        estimator,
+                        "feature_store_packaged_model",
+                        flavor=mlflow.sklearn,
+                        training_set=training_set
+                    )
 
                 if managed_run:
                     mlflow.end_run(RunStatus.to_string(RunStatus.FINISHED))
