@@ -47,26 +47,26 @@ def exception_safe_function_for_class(function):
         setattr(function, _ATTRIBUTE_EXCEPTION_SAFE, True)
 
     def safe_function(*args, **kwargs):
-        try:
+        if True:
             return function(*args, **kwargs)
-        except Exception as e:
-            if is_testing():
-                raise
-            else:
-                _logger.warning("Encountered unexpected error during autologging: %s", e)
+        # except Exception as e:
+        #     if is_testing():
+        #         raise
+        #     else:
+        #         _logger.warning("Encountered unexpected error during autologging: %s", e)
 
     safe_function = update_wrapper_extended(safe_function, function)
     return safe_function
 
 
 def _safe_function(function, *args, **kwargs):
-    try:
-        return function(*args, **kwargs)
-    except Exception as e:
-        if is_testing():
-            raise
-        else:
-            _logger.warning("Encountered unexpected error during autologging: %s", e)
+    #try:
+    return function(*args, **kwargs)
+    # except Exception as e:
+    #     if is_testing():
+    #         raise
+    #     else:
+    #         _logger.warning("Encountered unexpected error during autologging: %s", e)
 
 
 def picklable_exception_safe_function(function):
@@ -171,15 +171,15 @@ class PatchFunction:
         return cls().__call__(original, *args, **kwargs)
 
     def __call__(self, original, *args, **kwargs):
-        try:
-            return self._patch_implementation(original, *args, **kwargs)
-        except (Exception, KeyboardInterrupt) as e:
-            try:
-                self._on_exception(e)
-            finally:
-                # Regardless of what happens during the `_on_exception` callback, reraise
-                # the original implementation exception once the callback completes
-                raise e
+        #try:
+        return self._patch_implementation(original, *args, **kwargs)
+        # except (Exception, KeyboardInterrupt) as e:
+        #     try:
+        #         self._on_exception(e)
+        #     finally:
+        #         # Regardless of what happens during the `_on_exception` callback, reraise
+        #         # the original implementation exception once the callback completes
+        #         raise e
 
 
 def with_managed_run(autologging_integration, patch_function, tags=None):
@@ -270,10 +270,15 @@ def with_managed_run(autologging_integration, patch_function, tags=None):
                 print(f"Avesh: artifact_uri = {artifact_uri}")
                 repo = get_artifact_repository(artifact_uri)
                 with TempDir() as tmp:
+                    print("a")
                     repo.download_artifacts("model", tmp.path())
+                    print("b")
                     m = Model.load(os.path.join(tmp.path(), "model/MLmodel"))
+                    print("c")
                     input_cols = tuple(m.signature.inputs.input_names())
+                    print("d")
                     training_set = autologging_utils.fs_training_sets[input_cols]
+                    print("e")
                     fs = FeatureStoreClient()
                     fs.log_model(
                         estimator,
