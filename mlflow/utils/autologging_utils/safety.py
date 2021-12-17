@@ -23,6 +23,7 @@ from mlflow.store.artifact.artifact_repository_registry import get_artifact_repo
 from mlflow.utils.file_utils import TempDir
 from mlflow.models import Model
 from mlflow.utils import autologging_utils
+from databricks.feature_store import FeatureStoreClient
 
 _AUTOLOGGING_TEST_MODE_ENV_VAR = "MLFLOW_AUTOLOGGING_TESTING"
 
