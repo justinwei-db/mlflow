@@ -19,6 +19,11 @@ from mlflow.utils.autologging_utils.logging_and_warnings import (
     set_non_mlflow_warnings_behavior_for_current_thread,
 )
 from mlflow.utils.mlflow_tags import MLFLOW_AUTOLOGGING
+from mlflow.store.artifact.artifact_repository_registry import get_artifact_repository
+from mlflow.utils.file_utils import TempDir
+from mlflow.models import Model
+from mlflow.utils import autologging_utils
+import importlib
 
 _AUTOLOGGING_TEST_MODE_ENV_VAR = "MLFLOW_AUTOLOGGING_TESTING"
 
@@ -44,26 +49,26 @@ def exception_safe_function_for_class(function):
         setattr(function, _ATTRIBUTE_EXCEPTION_SAFE, True)
 
     def safe_function(*args, **kwargs):
-        try:
+        if True:
             return function(*args, **kwargs)
-        except Exception as e:
-            if is_testing():
-                raise
-            else:
-                _logger.warning("Encountered unexpected error during autologging: %s", e)
+        # except Exception as e:
+        #     if is_testing():
+        #         raise
+        #     else:
+        #         _logger.warning("Encountered unexpected error during autologging: %s", e)
 
     safe_function = update_wrapper_extended(safe_function, function)
     return safe_function
 
 
 def _safe_function(function, *args, **kwargs):
-    try:
-        return function(*args, **kwargs)
-    except Exception as e:
-        if is_testing():
-            raise
-        else:
-            _logger.warning("Encountered unexpected error during autologging: %s", e)
+    #try:
+    return function(*args, **kwargs)
+    # except Exception as e:
+    #     if is_testing():
+    #         raise
+    #     else:
+    #         _logger.warning("Encountered unexpected error during autologging: %s", e)
 
 
 def picklable_exception_safe_function(function):
@@ -168,15 +173,15 @@ class PatchFunction:
         return cls().__call__(original, *args, **kwargs)
 
     def __call__(self, original, *args, **kwargs):
-        try:
-            return self._patch_implementation(original, *args, **kwargs)
-        except (Exception, KeyboardInterrupt) as e:
-            try:
-                self._on_exception(e)
-            finally:
-                # Regardless of what happens during the `_on_exception` callback, reraise
-                # the original implementation exception once the callback completes
-                raise e
+        #try:
+        return self._patch_implementation(original, *args, **kwargs)
+        # except (Exception, KeyboardInterrupt) as e:
+        #     try:
+        #         self._on_exception(e)
+        #     finally:
+        #         # Regardless of what happens during the `_on_exception` callback, reraise
+        #         # the original implementation exception once the callback completes
+        #         raise e
 
 
 def with_managed_run(autologging_integration, patch_function, tags=None):
@@ -260,6 +265,39 @@ def with_managed_run(autologging_integration, patch_function, tags=None):
                     mlflow.end_run(RunStatus.to_string(RunStatus.FAILED))
                 raise
             else:
+                active_run = mlflow.active_run()
+                if active_run is None:
+                    print("Avesh: active_run is None")
+                artifact_uri = active_run.info.artifact_uri
+                print(f"Avesh: artifact_uri = {artifact_uri}")
+                repo = get_artifact_repository(artifact_uri)
+                with TempDir() as tmp:
+                    print("a")
+                    repo.download_artifacts("model", tmp.path())
+                    print("b")
+                    m = Model.load(os.path.join(tmp.path(), "model/MLmodel"))
+                    print("c")
+                    input_cols = tuple(m.signature.inputs.input_names())
+                    print("d")
+                    print(input_cols)
+                    print(autologging_utils.fs_training_sets)
+                    training_set = autologging_utils.fs_training_sets[input_cols]
+                    print("e")
+                    from databricks.feature_store import FeatureStoreClient
+                    print("imported fsclient")
+                    fs = FeatureStoreClient()
+                    print("model??:")
+                    print(result)
+                    flavor_name = [x for x in m.flavors.keys() if x != 'python_function'][0]
+                    print(f"flavor_name = {flavor_name}")
+                    mlflow_flavor_module = importlib.import_module(f"mlflow.{flavor_name}")
+                    fs.log_model(
+                        result,
+                        "feature_store_packaged_model",
+                        flavor=mlflow_flavor_module,
+                        training_set=training_set
+                    )
+
                 if managed_run:
                     mlflow.end_run(RunStatus.to_string(RunStatus.FINISHED))
                 return result
@@ -532,6 +570,7 @@ def safe_patch(
                     # This is important because several autologging patch implementations inspect
                     # the signature of the `original` argument during execution
                     call_original = update_wrapper_extended(call_original, original)
+                    #import pdb; pdb.set_trace()
 
                     try_log_autologging_event(
                         AutologgingEventLogger.get_logger().log_patch_function_start,
@@ -546,6 +585,7 @@ def safe_patch(
                         patch_function.call(call_original, *args, **kwargs)
                     else:
                         patch_function(call_original, *args, **kwargs)
+
 
                     session.state = "succeeded"
 
