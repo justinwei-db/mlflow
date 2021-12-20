@@ -280,8 +280,9 @@ def with_managed_run(autologging_integration, patch_function, tags=None):
                     input_cols = tuple(m.signature.inputs.input_names())
                     print("d")
                     print(input_cols)
-                    print(autologging_utils.fs_training_sets)
-                    training_set = autologging_utils.fs_training_sets[input_cols]
+                    global _fs_training_set
+                    print(_fs_training_set)
+                    training_set = _fs_training_set[input_cols]
                     print("e")
                     from databricks.feature_store import FeatureStoreClient
                     print("imported fsclient")

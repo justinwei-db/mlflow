@@ -37,8 +37,6 @@ from mlflow.utils.autologging_utils.safety import *
 from mlflow.utils.autologging_utils.events import *
 from mlflow.utils.autologging_utils.client import *
 
-fs_training_sets = {}
-
 INPUT_EXAMPLE_SAMPLE_ROWS = 5
 ENSURE_AUTOLOGGING_ENABLED_TEXT = (
     "please ensure that autologging is enabled before constructing the dataset."

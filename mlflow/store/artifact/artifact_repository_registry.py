@@ -52,7 +52,7 @@ class ArtifactRepositoryRegistry:
                 )
 
     def get_artifact_repository(self, artifact_uri):
-        """Get an artifact repository from the registry based on the scheme of artifact_urih
+        """Get an artifact repository from the registry based on the scheme of artifact_uri
 
         :param store_uri: The store URI. This URI is used to select which artifact repository
                           implementation to instantiate and is passed to the
